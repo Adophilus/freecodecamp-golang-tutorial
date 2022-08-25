@@ -1,0 +1,70 @@
+#! /usr/bin/env bash
+
+_envs=($(cat ".venv/data/env"))
+_oldEnvs=()
+export MY_VIRTUAL_ENV_ENABLED=false
+
+function splitEnv () {
+  local __env=$1
+
+  local __envName="$(echo $__env | sed -E "s/(.*?)=.*$/\\1/")"
+  local __envValue="$(echo $__env | sed -E "s/.*?=(.*?)$/\\1/")"
+
+  echo $__envName
+  echo $__envValue
+}
+
+function setEnv () {
+  local __envName=$1
+  local __envValue=$2
+
+  if [[ $(echo __envValue | grep -E "\$(.*)") ]];
+  then
+    export $__envName="$(eval "echo $__envValue")"
+  else
+    export $__envName="$__envValue"
+  fi
+}
+
+function restoreEnvs () {
+
+  for __oldEnv in ${_oldEnvs[@]}
+  do
+    local __env=($(splitEnv "$__oldEnv"))
+    local __envName=$(echo ${__env[0]})
+    local __envValue=${__env[1]}
+
+    setEnv "$__envName" "$__envValue"
+  done
+}
+
+function processEnvs () {
+  for _env in ${_envs[@]}
+  do
+    local __env=($(splitEnv "$_env"))
+    local __envName=$(echo ${__env[0]})
+    local __envValue=${__env[1]}
+
+    _oldEnvs+=("$__envName=$(eval "echo \$$__envName")")
+
+    setEnv "$__envName" "$__envValue"
+  done
+}
+
+function deactivate () {
+  restoreEnvs
+
+  unset splitEnv
+  unset processEnvs
+  unset restoreEnvs
+  unset _envs
+  unset deactivate
+  unset MY_VIRTUAL_ENV_ENABLED
+}
+
+if [[ !$MY_VIRTUAL_ENV_ENABLED ]]
+then
+  processEnvs
+  export MY_VIRTUAL_ENV_ENABLED=true
+fi
+
