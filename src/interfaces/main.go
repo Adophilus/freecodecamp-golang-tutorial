@@ -71,13 +71,13 @@ func (bwc *BufferedWriterCloser) Close () error {
 }
 
 // what is an interface?
+// an interface is a contract that defined the behaviour of an 'object'
 
 // use cases
 // for defining the behaviour of an 'object' in go
 
 // empty interfaces
-// value-type implementation
-// pointer implementation
+// these are interfaces defined on the fly that have no methods on it
 
 // best practice
 // if the interface has one method (which isnamed after it),
