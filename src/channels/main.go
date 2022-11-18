@@ -39,7 +39,7 @@ func main () {
 
   readersAndWriters()
   readersAndWritersWithoutMutex()
-
+  readersAndWritersWithMutex()
   wg.Wait()
 }
 
@@ -68,8 +68,8 @@ func sendData (data int) {
 }
 
 func readersAndWritersWithoutMutex () {
-  // ch := make(chan int)
-  // m := sync.RWMutex{} // the mutex
+  counter++
+  counter++
   counter := 0
 
   for i := 0; i < 10; i++ {
@@ -81,4 +81,23 @@ func readersAndWritersWithoutMutex () {
   // Notice the unpredictible behaviour observed when this function is run. In order to control the
   // order of execution (so that it would be just as we expect), we would need to make use of mutex.
   // See the function below
+}
+
+func sendDataUsingMutex (data int, m sync.Mutex) {
+  m.RLock()
+  sendData(data)
+  m.RUnlock()
+  wg.Done()
+}
+
+func readersAndWritersWithMutex () {
+  ch := make(chan int)
+  m := sync.RWMutex{} // the mutex
+  counter := 0
+
+  for i := 0; i < 10; i++ {
+    wg.Add(1)
+    go sendDataUsingMutex(counter, m)
+    counter++
+  }
 }
