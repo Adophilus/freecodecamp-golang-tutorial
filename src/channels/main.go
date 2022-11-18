@@ -38,6 +38,7 @@ func main () {
   }()
 
   readersAndWriters()
+  readersAndWritersWithoutMutex()
 
   wg.Wait()
 }
@@ -59,4 +60,25 @@ func readersAndWriters () {
     // fmt.Println(<-ch) // would cause the program to panic because ch is a write only channel
     wg.Done()
   }(ch)
+}
+
+func sendData (data int) {
+  fmt.Println("Sending data %v", data)
+  wg.Done()
+}
+
+func readersAndWritersWithoutMutex () {
+  // ch := make(chan int)
+  // m := sync.RWMutex{} // the mutex
+  counter := 0
+
+  for i := 0; i < 10; i++ {
+    wg.Add(1)
+    go sendData(counter)
+    counter++
+  }
+
+  // Notice the unpredictible behaviour observed when this function is run. In order to control the
+  // order of execution (so that it would be just as we expect), we would need to make use of mutex.
+  // See the function below
 }
