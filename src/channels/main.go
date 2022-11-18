@@ -111,7 +111,25 @@ func readersAndWritersWithMutex () {
   // we still get some of that unpredictible behaviour. See the function below to discover the solution
 }
 
-func readersAndWritersWithMutex2 () {
+func readersAndWritersWithMutex2 (){
+  counter := 0
+  m := sync.RWMutex{} // the mutex
+  sendDataUsingMutex := func (data int) {
+    fmt.Println("Sending data (using mutex) %v", data)
+    m.RUnlock()
+    wg.Done()
+  }
+  increment := func () {
+    counter++
+    m.Unlock()
+    wg.Done()
+  }
 
-
-}
+  for i := 0; i < 10; i++ {
+    wg.Add(2)
+    m.RLock()
+    go sendDataUsingMutex(counter)
+    m.Lock()
+    go increment()
+  }
+} 
