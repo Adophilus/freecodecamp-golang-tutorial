@@ -86,7 +86,6 @@ func readersAndWritersWithoutMutex () {
 }
 
 func readersAndWritersWithMutex () {
-  //ch := make(chan int)
   counter := 0
   m := sync.RWMutex{} // the mutex
   sendDataUsingMutex := func (data int) {
@@ -107,4 +106,12 @@ func readersAndWritersWithMutex () {
     go sendDataUsingMutex(counter)
     go increment()
   }
+
+  // Notice that this time, the order of execution goes in the expected direction. The issue now is that
+  // we still get some of that unpredictible behaviour. See the function below to discover the solution
+}
+
+func readersAndWritersWithMutex2 () {
+
+
 }
