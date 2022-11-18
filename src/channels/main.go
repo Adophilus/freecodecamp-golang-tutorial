@@ -40,6 +40,7 @@ func main () {
   readersAndWriters()
   readersAndWritersWithoutMutex()
   readersAndWritersWithMutex()
+  readersAndWritersWithMutex2()
   wg.Wait()
 }
 
@@ -115,7 +116,7 @@ func readersAndWritersWithMutex2 (){
   counter := 0
   m := sync.RWMutex{} // the mutex
   sendDataUsingMutex := func (data int) {
-    fmt.Println("Sending data (using mutex) %v", data)
+    fmt.Println("Sending data (using mutex 2) %v", data)
     m.RUnlock()
     wg.Done()
   }
@@ -132,4 +133,7 @@ func readersAndWritersWithMutex2 (){
     m.Lock()
     go increment()
   }
+
+  // Gives expected behaviour. But takes away the key feature of parallelism and thus making this code
+  // run worse than it would've if you weren't even using goroutines.
 } 
