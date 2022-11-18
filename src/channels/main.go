@@ -68,14 +68,16 @@ func sendData (data int) {
 }
 
 func readersAndWritersWithoutMutex () {
-  counter++
-  counter++
   counter := 0
+  increment := func () {
+    counter++
+    wg.Done()
+  }
 
   for i := 0; i < 10; i++ {
-    wg.Add(1)
+    wg.Add(2)
     go sendData(counter)
-    counter++
+    go increment()
   }
 
   // Notice the unpredictible behaviour observed when this function is run. In order to control the
@@ -83,21 +85,26 @@ func readersAndWritersWithoutMutex () {
   // See the function below
 }
 
-func sendDataUsingMutex (data int, m sync.Mutex) {
-  m.RLock()
-  sendData(data)
-  m.RUnlock()
-  wg.Done()
-}
-
 func readersAndWritersWithMutex () {
-  ch := make(chan int)
-  m := sync.RWMutex{} // the mutex
+  //ch := make(chan int)
   counter := 0
+  m := sync.RWMutex{} // the mutex
+  sendDataUsingMutex := func (data int) {
+    m.RLock()
+    fmt.Println("Sending data (using mutex) %v", data)
+    m.RUnlock()
+    wg.Done()
+  }
+  increment := func () {
+    m.Lock()
+    counter++
+    m.Unlock()
+    wg.Done()
+  }
 
   for i := 0; i < 10; i++ {
-    wg.Add(1)
-    go sendDataUsingMutex(counter, m)
-    counter++
+    wg.Add(2)
+    go sendDataUsingMutex(counter)
+    go increment()
   }
 }
